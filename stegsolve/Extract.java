@@ -46,6 +46,9 @@ public class Extract extends javax.swing.JFrame {
      * components to examine
      */
     private int rgbOrder = 0;
+
+    private boolean writeHighBitFirst = true;
+
     /**
      * Bit position in the current extract byte
      */
@@ -128,6 +131,8 @@ public class Extract extends javax.swing.JFrame {
         else rowFirst = false;
         if(LSBButton.isSelected()) lsbFirst = true;
         else lsbFirst = false;
+        if(highBitButton.isSelected()) writeHighBitFirst = true;
+        else writeHighBitFirst = false;
         if(RGBButton.isSelected()) rgbOrder = 1;
         else if (RBGButton.isSelected()) rgbOrder = 2;
         else if (GRBButton.isSelected()) rgbOrder = 3;
@@ -146,10 +151,21 @@ public class Extract extends javax.swing.JFrame {
         {
            extract[extractBytePos]+=extractBitPos;
         }
-        extractBitPos>>=1;
-        if(extractBitPos>=1)
-            return;
-        extractBitPos=128;
+        if(writeHighBitFirst)
+        {
+            extractBitPos>>=1;
+            if(extractBitPos>=1)
+                return;
+            extractBitPos=128;
+        }
+        else
+        {
+            extractBitPos<<=1;
+            if(extractBitPos<=128)
+                return;
+            extractBitPos=1;
+        }
+        
         extractBytePos++;
         if(extractBytePos<extract.length)
             extract[extractBytePos]=0;
@@ -271,7 +287,7 @@ public class Extract extends javax.swing.JFrame {
         len = len * maskbits; // number of bits to be extracted
         len = (len +7)/8; // bytes to be extracted
         extract = new byte[len];
-        extractBitPos = 128;
+        extractBitPos = writeHighBitFirst ? 128 : 1;
         extractBytePos = 0;
         //System.out.println(bi.getHeight()+" "+bi.getWidth()+" "+len+" "+mask);
         if(rowFirst)
@@ -477,12 +493,18 @@ public class Extract extends javax.swing.JFrame {
         saveBinButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
 
+        highBitButton = new javax.swing.JRadioButton();
+        lowBitButton = new javax.swing.JRadioButton();
+        bitWriteGroup = new javax.swing.ButtonGroup();
+        bitWriteOrderLabel = new javax.swing.JLabel();
+        bitWriteOrderPanel = new javax.swing.JPanel();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(790, 560));
         getContentPane().setLayout(new java.awt.BorderLayout(5, 5));
 
-        optionsPanel.setMinimumSize(new java.awt.Dimension(720, 280));
-        optionsPanel.setPreferredSize(new java.awt.Dimension(720, 280));
+        optionsPanel.setMinimumSize(new java.awt.Dimension(720, 330));
+        optionsPanel.setPreferredSize(new java.awt.Dimension(720, 330));
         optionsPanel.setLayout(new java.awt.BorderLayout());
 
         lhSettingsPanel.setMinimumSize(new java.awt.Dimension(360, 280));
@@ -677,12 +699,12 @@ public class Extract extends javax.swing.JFrame {
 
         optionsPanel.add(lhSettingsPanel, java.awt.BorderLayout.CENTER);
 
-        rhSettingsPanel.setMinimumSize(new java.awt.Dimension(300, 280));
-        rhSettingsPanel.setPreferredSize(new java.awt.Dimension(300, 280));
+        rhSettingsPanel.setMinimumSize(new java.awt.Dimension(350, 330));
+        rhSettingsPanel.setPreferredSize(new java.awt.Dimension(350, 330));
         rhSettingsPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 5));
 
         orderSettingsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Order settings"));
-        orderSettingsPanel.setPreferredSize(new java.awt.Dimension(280, 260));
+        orderSettingsPanel.setPreferredSize(new java.awt.Dimension(330, 310));
         orderSettingsPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
         extractByLabel.setText("Extract By");
@@ -702,7 +724,7 @@ public class Extract extends javax.swing.JFrame {
         bitOrderPanel.setPreferredSize(new java.awt.Dimension(250, 41));
         bitOrderPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-        bitOrderLabel.setText("Bit Order");
+        bitOrderLabel.setText("Bit Extract");
         bitOrderPanel.add(bitOrderLabel);
 
         bitGroup.add(MSBButton);
@@ -715,6 +737,23 @@ public class Extract extends javax.swing.JFrame {
         bitOrderPanel.add(LSBButton);
 
         orderSettingsPanel.add(bitOrderPanel);
+
+        bitWriteOrderPanel.setPreferredSize(new java.awt.Dimension(300, 41));
+        bitWriteOrderPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        bitWriteOrderLabel.setText("Bit Write");
+        bitWriteOrderPanel.add(bitWriteOrderLabel);
+
+        bitWriteGroup.add(highBitButton);
+        highBitButton.setSelected(true);
+        highBitButton.setText("MSB First");
+        bitWriteOrderPanel.add(highBitButton);
+
+        bitWriteGroup.add(lowBitButton);
+        lowBitButton.setText("LSB First");
+        bitWriteOrderPanel.add(lowBitButton);
+
+        orderSettingsPanel.add(bitWriteOrderPanel);
 
         bitPlaneOrderPanel.setPreferredSize(new java.awt.Dimension(250, 130));
 
@@ -985,6 +1024,12 @@ public class Extract extends javax.swing.JFrame {
     private javax.swing.JPanel rhSettingsPanel;
     private javax.swing.JButton saveBinButton;
     private javax.swing.JButton saveTextButton;
+
+    private javax.swing.JRadioButton highBitButton;
+    private javax.swing.JRadioButton lowBitButton;
+    private javax.swing.ButtonGroup bitWriteGroup;
+    private javax.swing.JLabel bitWriteOrderLabel;
+    private javax.swing.JPanel bitWriteOrderPanel;
     // End of variables declaration//GEN-END:variables
 
 }
